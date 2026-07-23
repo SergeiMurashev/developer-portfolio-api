@@ -2,26 +2,8 @@
 
 Backend-сервис для лендинг-презентации разработчика на `FastAPI` + `PostgreSQL` с AI-интеграцией, email-уведомлениями, rate limiting, логированием в файл и Swagger/OpenAPI.
 
-## Что уже закрыто по ТЗ
-
-- `POST /api/contact`
-- валидация `name`, `phone`, `email`, `comment`
-- отправка письма владельцу сайта
-- отправка копии письма пользователю
-- AI-анализ обращения с graceful fallback
-- rate limiting
-- логирование запросов в файл
-- `GET /api/health`
-- `GET /api/metrics`
-- Swagger/OpenAPI документация
-- `.env`-конфигурация
-- глобальная обработка ошибок
-- CORS
-- слоистая архитектура
-
 ## Что важно знать заранее
 
-- Это production-shaped MVP, а не “игрушечный” пример.
 - Если AI-провайдер недоступен или ключ не задан, сервис не падает, а продолжает работу через fallback.
 - Email-отправка сделана синхронно. Если SMTP недоступен, обращение сохраняется, а статус уведомлений возвращается как частично неуспешный.
 
@@ -144,6 +126,118 @@ RATE_LIMIT_HASH_SECRET=change-me
 - `OPENAI_MODEL=llama-3.1-8b-instant`
 
 Если ключ не задан, сервис продолжит работать через fallback и вернёт ответ без AI-обогащения.
+
+## AI-интеграция
+
+### Какие AI-инструменты и для чего
+
+- Groq API через OpenAI-compatible endpoint.
+- Используется для анализа комментария на backend:
+  - категория обращения;
+  - тональность;
+  - приоритет;
+  - краткое резюме;
+  - черновик ответа пользователю.
+
+### Как реализован fallback
+
+- Если `OPENAI_API_KEY` не задан, сервис использует локальный heuristic fallback.
+- Если внешний провайдер недоступен, отвечает с ошибкой или возвращает невалидный JSON, тоже включается fallback.
+- Fallback не прерывает основной поток: обращение всё равно сохраняется, а email-логика продолжает выполняться.
+
+### Промпты, которые использовались
+
+System prompt:
+
+```text
+Return only JSON.
+```
+
+User prompt template:
+
+```text
+You are a backend assistant analyzing a contact form message.
+Return strict JSON with keys: category, sentiment, priority, summary, suggested_reply.
+Categories: job_offer, project_request, support, general.
+Sentiment: positive, neutral, negative.
+Priority: low, medium, high.
+Name: {name}
+Email: {email}
+Comment: {comment}
+```
+
+## Что сделано с помощью AI
+
+### Какие части кода генерировались
+
+- базовый каркас проекта;
+- первые версии Pydantic-схем;
+- черновой README;
+- документация.
+
+### Какие промпты использовались
+
+- `Create a sample backend skeleton in Python with a multi-tier architecture: handlers, use cases, repositories and services, modelled on my Go stack.`
+- `Add an AI-based fallback solution to ensure the API continues to function should the provider become unavailable.`
+- `Write a README file for the backend testing task, including configuration details, API examples and AI integration.`
+- `Add endpoint documentation in OpenAPI format, similar to the documentation for my production backend projects in Go.`
+
+### Что пришлось исправлять вручную
+
+- импорты и wiring модулей;
+- Docker Compose networking;
+- обработку ошибок и HTTP-статусы;
+- rate limiting;
+- поведение `metrics` при недоступной базе;
+- формулировки и структуру документации;
+- локальный и docker-режимы запуска.
+
+## Хранение данных
+
+### Как реализовано хранение логов
+
+- `logs/app.log` - лог приложения;
+- `data/request_logs.jsonl` - поток request-логов;
+- каждый request-лог содержит:
+  - timestamp;
+  - request_id;
+  - method;
+  - path;
+  - status_code;
+  - duration_ms;
+  - client_ip;
+  - query.
+
+### Как реализован rate limiting
+
+- Счётчик хранится в таблице `rate_limits` PostgreSQL.
+- Ключ клиента хэшируется, сырой IP не сохраняется.
+- Параметры лимита берутся из `.env`:
+  - `RATE_LIMIT_REQUESTS`
+  - `RATE_LIMIT_WINDOW_SECONDS`
+  - `RATE_LIMIT_HASH_SECRET`
+
+### Где хранится статистика
+
+- Статистика не дублируется в JSON-файл.
+- Источник истины - таблица `contacts`.
+- `GET /api/metrics` собирает агрегаты напрямую из PostgreSQL.
+
+### One-command start
+
+Для проверки проекта одной командой используй:
+
+```powershell
+.\start.ps1
+```
+
+Эта команда поднимет сразу:
+
+- PostgreSQL
+- MailHog
+- API
+
+Если нужно запускать локально без Docker, тогда поднимайте базу отдельно и запускай `uvicorn` вручную.
 
 ## База данных
 

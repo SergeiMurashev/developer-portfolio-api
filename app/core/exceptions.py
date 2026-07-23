@@ -15,3 +15,11 @@ class RateLimitExceededError(AppError):
         )
         self.retry_after_seconds = retry_after_seconds
 
+
+class DatabaseUnavailableError(AppError):
+    def __init__(self) -> None:
+        super().__init__(
+            code="database_unavailable",
+            message="База данных временно недоступна.",
+            status_code=503,
+        )

@@ -37,11 +37,11 @@ services:
       LOG_DIR: ${LOG_DIR:-logs}
       DATA_DIR: ${DATA_DIR:-data}
       CORS_ORIGINS: ${CORS_ORIGINS:-*}
-      DATABASE_URL: ${DATABASE_URL:-postgresql://zephy_db:1234@db:5432/zephy_db}
+      DATABASE_URL: postgresql://zephy_db:1234@db:5432/zephy_db
       DATABASE_CONNECT_TIMEOUT_SECONDS: ${DATABASE_CONNECT_TIMEOUT_SECONDS:-5}
       OWNER_EMAIL: ${OWNER_EMAIL:-owner@example.com}
-      SMTP_HOST: ${SMTP_HOST:-mailhog}
-      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
       SMTP_USERNAME: ${SMTP_USERNAME:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_FROM: ${SMTP_FROM:-portfolio@example.com}

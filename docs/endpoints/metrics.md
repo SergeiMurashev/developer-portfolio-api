@@ -30,9 +30,12 @@
 - email-failures;
 - распределение по категориям.
 
+### Negative scenario
+
+Если PostgreSQL недоступен, ручка возвращает `503 Service Unavailable` с телом ошибки `database_unavailable`.
+
 ### curl example
 
 ```bash
 curl http://localhost:8000/api/metrics
 ```
-
