@@ -163,6 +163,13 @@ psql -h localhost -p 5441 -U zephy_db -d zephy_db -f migrations/schema.sql
 
 ## API
 
+Подробная документация по ручкам вынесена отдельно:
+
+- [docs/index.md](/C:/Dev/GolandProjects/developer-portfolio-api/docs/index.md)
+- [docs/endpoints/contact.md](/C:/Dev/GolandProjects/developer-portfolio-api/docs/endpoints/contact.md)
+- [docs/endpoints/health.md](/C:/Dev/GolandProjects/developer-portfolio-api/docs/endpoints/health.md)
+- [docs/endpoints/metrics.md](/C:/Dev/GolandProjects/developer-portfolio-api/docs/endpoints/metrics.md)
+
 ### `POST /api/contact`
 
 Создаёт обращение, запускает AI-анализ, сохраняет контакт, отправляет письма и возвращает итоговый статус.
